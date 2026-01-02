@@ -7,6 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import AlertsListScreen from './screens/AlertsListScreen';
 import CreateAlertScreen from './screens/CreateAlertScreen';
+import FilterScreen from './screens/FilterScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,6 +62,11 @@ const App = () => {
               name="CreateAlert"
               component={CreateAlertScreen}
             />
+            <Stack.Screen
+        name="Filter"
+        component={FilterScreen}
+      />
+      
           </>
         ) : (
           <>
