@@ -36,12 +36,22 @@ export interface PriceAlert {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+   busType?: string;
+  departureTimeFrom?: string;
+  departureTimeTo?: string;
+  arrivalTimeFrom?: string;
+  arrivalTimeTo?: string;
 }
 
 export interface CreateAlertRequest {
   source: string;
   destination: string;
   targetPrice: number;
+   busType?: string;
+  departureTimeFrom?: string;
+  departureTimeTo?: string;
+  arrivalTimeFrom?: string;
+  arrivalTimeTo?: string;
 }
 
 export interface AlertNotification {
