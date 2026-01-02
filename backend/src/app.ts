@@ -1,6 +1,8 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRouter from './routes/auth';
+import alertsRouter from './routes/alerts';
 
 dotenv.config();
 
@@ -13,6 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.use('/auth', authRouter);
+app.use('/alerts', alertsRouter);
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Bus Price Tracker API is running' });
 });
