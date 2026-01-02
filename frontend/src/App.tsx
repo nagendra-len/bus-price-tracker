@@ -8,6 +8,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import AlertsListScreen from './screens/AlertsListScreen';
 import CreateAlertScreen from './screens/CreateAlertScreen';
 import FilterScreen from './screens/FilterScreen';
+import BookingScreen from './screens/BookingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -66,6 +67,11 @@ const App = () => {
         name="Filter"
         component={FilterScreen}
       />
+            <Stack.Screen
+        name="Booking"
+        component={BookingScreen}
+      />
+      
       
           </>
         ) : (
