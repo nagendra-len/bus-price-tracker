@@ -5,6 +5,8 @@ import authRouter from './routes/auth';
 import alertsRouter from './routes/alerts';
 import bookingRouter from './routes/booking';
 import notificationsRouter from './routes/notifications';
+import travelerRouter from './routes/traveler.routes';
+import paymentsRouter from './routes/payments.routes';
 
 dotenv.config();
 
@@ -21,6 +23,8 @@ app.use('/auth', authRouter);
 app.use('/alerts', alertsRouter);
 app.use('/bookings', bookingRouter);
 app.use('/notifications', notificationsRouter);
+app.use('/travelers', travelerRouter);
+app.use('/payments', paymentsRouter);
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Bus Price Tracker API is running' });
 });
