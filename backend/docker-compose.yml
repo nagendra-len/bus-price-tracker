@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: bus-tracker-db
+    environment:
+      POSTGRES_USER: bus_user
+      POSTGRES_PASSWORD: bus_password_dev
+      POSTGRES_DB: bus_tracker_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bus_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bus-tracker-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bus-tracker-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://bus_user:bus_password_dev@db:5432/bus_tracker_db
+      PORT: 5000
+      JWT_SECRET: dev_secret_key_change_in_production
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USER: your_email@gmail.com
+      SMTP_PASS: your_app_password
+      TWILIO_ACCOUNT_SID: your_twilio_sid
+      TWILIO_AUTH_TOKEN: your_twilio_token
+      TWILIO_PHONE: +1234567890
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/node_modules
+    networks:
+      - bus-tracker-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: bus-tracker-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bus-tracker-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  bus-tracker-network:
+    driver: bridge
