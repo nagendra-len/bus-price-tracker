@@ -51,3 +51,22 @@ CREATE INDEX IF NOT EXISTS idx_alerts_route_id ON alerts(route_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_active ON alerts(is_active);
 CREATE INDEX IF NOT EXISTS idx_price_history_route_id ON price_history(route_id);
 CREATE INDEX IF NOT EXISTS idx_bus_routes_source_dest ON bus_routes(source, destination);
+
+-- Bookings table
+CREATE TABLE IF NOT EXISTS bookings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    route_id INTEGER NOT NULL REFERENCES bus_routes(id),
+    price DECIMAL(10, 2) NOT NULL,
+    passenger_count INTEGER NOT NULL,
+    passenger_details JSON NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    notification_preferences JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+-- Create indexes for bookings
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_route_id ON bookings(route_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
