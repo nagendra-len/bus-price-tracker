@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: bus-price-tracker-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DB_HOST
+        fromDatabase:
+          name: bus-tracker-db
+          property: hostname
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        value: bus_tracker
+      - key: DB_USER
+        fromDatabase:
+          name: bus-tracker-db
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: bus-tracker-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_TLS_REJECT_UNAUTHORIZED
+        value: "0"
+    healthCheckPath: /api/health
+    preDeployCommand: npm run migrate
+
+databases:
+  - name: bus-tracker-db
+    plan: free
+    region: singapore
+    databaseName: bus_tracker
+    user: tracker_user
