@@ -9,6 +9,7 @@ interface RegisterRequest extends Request {
   body: {
     email: string;
     password: string;
+      phone?: string;
     name: string;
   };
 }
@@ -17,6 +18,7 @@ interface LoginRequest extends Request {
   body: {
     email: string;
     password: string;
+      phone?: string;
   };
 }
 
@@ -60,23 +62,24 @@ router.post('/register', async (req: RegisterRequest, res: Response) => {
 // Login endpoint
 router.post('/login', async (req: LoginRequest, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, phone, password
 
     // Validate input
-    if (!email || !password) {
+    if (!password || (!email && !phone)) {
       return res.status(400).json({ error: 'Missing email or password' });
     }
 
-    // Find user
-    const result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+// Find user by email or phone
+    let result;
+    if (email) {
+      result = await query('SELECT * FROM users WHERE email = $1', [email]);
+    } else if (phone) {
+      result = await query('SELECT * FROM users WHERE phone = $1', [phone]);
     }
-
-    const user = result.rows[0];
-
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (result?.rows.length === 0) {    const user = result.rows[0]; const isPasswordValid = await bcrypt.compare(password, user.password);
+                                          return res.status(401).json({ error: 'Invalid credentials' });
+    }
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
