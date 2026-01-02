@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/auth';
 import alertsRouter from './routes/alerts';
+import bookingRouter from './routes/booking';
+import notificationsRouter from './routes/notifications';
 
 dotenv.config();
 
@@ -17,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/auth', authRouter);
 app.use('/alerts', alertsRouter);
+app.use('/bookings', bookingRouter);
+app.use('/notifications', notificationsRouter);
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'Bus Price Tracker API is running' });
 });
