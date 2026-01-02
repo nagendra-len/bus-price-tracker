@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+yarn-error.log
+npm-debug.log*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage/
+.nyc_output/
+
+# OS
+Thumbs.db
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# Misc
+*.log
+.cache/
+
+# Build output
+build/
+*.apk
+*.ipa
+*.app
