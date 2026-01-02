@@ -3,8 +3,9 @@ import { View, FlatList, Text, TouchableOpacity, ActivityIndicator, Alert, Style
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api';
 import { setAlerts } from '../store';
+import { PriceAlert } from '../types';
 
-interface Alert {
+interface AlertItem {
   id: number;
   source_city: string;
   destination_city: string;
@@ -12,20 +13,44 @@ interface Alert {
   is_active: boolean;
 }
 
-const AlertsListScreen = ({ navigation }: any) => {
+const AlertsListScreen = ({ navigation, route }: any) => {
   const [loading, setLoading] = useState(true);
+  const [filteredAlerts, setFilteredAlerts] = useState<AlertItem[]>([]);
   const dispatch = useDispatch();
   const alerts = useSelector((state: any) => state.alerts.items);
+  const [appliedFilters, setAppliedFilters] = useState<Partial<PriceAlert> | null>(null);
 
   useEffect(() => {
     loadAlerts();
   }, []);
+
+  useEffect(() => {
+    if (route.params?.filters) {
+      setAppliedFilters(route.params.filters);
+      applyFilters(alerts, route.params.filters);
+    } else {
+      setFilteredAlerts(alerts);
+    }
+  }, [alerts, route.params?.filters]);
+
+  const applyFilters = (alertsList: AlertItem[], filters: Partial<PriceAlert>) => {
+    let filtered = alertsList;
+
+    if (filters.busType) {
+      filtered = filtered.filter((alert) =>
+        alert.source_city.toLowerCase().includes(filters.busType?.toLowerCase() || '')
+      );
+    }
+
+    setFilteredAlerts(filtered);
+  };
 
   const loadAlerts = async () => {
     try {
       setLoading(true);
       const data = await api.getAlerts();
       dispatch(setAlerts(data));
+      setFilteredAlerts(data);
     } catch (error: any) {
       Alert.alert('Error', 'Failed to load alerts');
     } finally {
@@ -55,7 +80,7 @@ const AlertsListScreen = ({ navigation }: any) => {
     );
   };
 
-  const renderAlertItem = ({ item }: { item: Alert }) => (
+  const renderAlertItem = ({ item }: { item: AlertItem }) => (
     <View style={styles.alertCard}>
       <View style={styles.alertContent}>
         <Text style={styles.route}>
@@ -85,20 +110,48 @@ const AlertsListScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      {alerts.length === 0 ? (
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Price Alerts</Text>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => navigation.navigate('Filter')}
+        >
+          <Text style={styles.filterButtonText}>⚙ Filters</Text>
+        </TouchableOpacity>
+      </View>
+
+      {appliedFilters && (
+        <View style={styles.activeFiltersContainer}>
+          <Text style={styles.activeFiltersText}>
+            Filters Applied: {appliedFilters.busType ? `Bus Type: ${appliedFilters.busType}` : ''}
+          </Text>
+          <TouchableOpacity onPress={() => {
+            setAppliedFilters(null);
+            setFilteredAlerts(alerts);
+          }}>
+            <Text style={styles.clearFiltersText}>Clear</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {filteredAlerts.length === 0 ? (
         <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>No price alerts yet</Text>
+          <Text style={styles.emptyText}>
+            {alerts.length === 0 ? 'No price alerts yet' : 'No alerts match your filters'}
+          </Text>
           <TouchableOpacity
             style={styles.createButton}
             onPress={() => navigation.navigate('CreateAlert')}
           >
-            <Text style={styles.createButtonText}>Create First Alert</Text>
+            <Text style={styles.createButtonText}>
+              {alerts.length === 0 ? 'Create First Alert' : 'Create Alert'}
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
         <>
           <FlatList
-            data={alerts}
+            data={filteredAlerts}
             renderItem={renderAlertItem}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.listContent}
@@ -119,6 +172,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+  },
+  filterButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  filterButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  activeFiltersContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#E8F4FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#B3D9FF',
+  },
+  activeFiltersText: {
+    fontSize: 12,
+    color: '#0066CC',
+    fontWeight: '500',
+  },
+  clearFiltersText: {
+    fontSize: 12,
+    color: '#0066CC',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   centerContainer: {
     flex: 1,
