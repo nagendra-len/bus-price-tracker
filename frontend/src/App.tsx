@@ -1,68 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Provider } from 'react-redux';
-import store from './store';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Placeholder screen components
-const DashboardScreen = () => {
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
+import AlertsListScreen from './screens/AlertsListScreen';
+import CreateAlertScreen from './screens/CreateAlertScreen';
+
+const Stack = createNativeStackNavigator();
+
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = (token) => {
+    AsyncStorage.setItem('authToken', token);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    AsyncStorage.removeItem('authToken');
+    setIsLoggedIn(false);
+  };
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
-    <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <h1>Dashboard - Price Tracking</h1>
-      <p>Coming soon: Real-time bus price tracking interface</p>
-    </div>
-  );
-};
-
-const AlertsScreen = () => {
-  return (
-    <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <h1>My Alerts</h1>
-      <p>Coming soon: Manage your price alerts</p>
-    </div>
-  );
-};
-
-const SettingsScreen = () => {
-  return (
-    <div style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <h1>Settings</h1>
-      <p>Coming soon: User preferences and configuration</p>
-    </div>
-  );
-};
-
-const Tab = createBottomTabNavigator();
-
-const App: React.FC = () => {
-  return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <Tab.Navigator>
-          <Tab.Screen 
-            name="Dashboard" 
-            component={DashboardScreen}
-            options={{
-              headerTitle: 'Bus Price Tracker',
-            }}
-          />
-          <Tab.Screen 
-            name="Alerts" 
-            component={AlertsScreen}
-            options={{
-              headerTitle: 'My Alerts',
-            }}
-          />
-          <Tab.Screen 
-            name="Settings" 
-            component={SettingsScreen}
-            options={{
-              headerTitle: 'Settings',
-            }}
-          />
-        </Tab.Navigator>
-      </NavigationContainer>
-    </Provider>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {isLoggedIn ? (
+          <>
+            <Stack.Screen
+              name="AlertsList"
+              component={AlertsListScreen}
+              options={{
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="CreateAlert"
+              component={CreateAlertScreen}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              initialParams={{ onLogin: handleLogin }}
+              options={{
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={RegisterScreen}
+              initialParams={{ onLogin: handleLogin }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
